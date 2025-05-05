@@ -9,6 +9,7 @@
 #include "afxdialogex.h"
 
 #include <math.h>
+#include <random>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -24,7 +25,7 @@ CSubmitDlg::CSubmitDlg(CWnd* pParent /*=nullptr*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	m_hThread = INVALID_HANDLE_VALUE;
+	m_hThread = NULL;
 
 	m_nDragPtIdx = -1;
 	/*/
@@ -295,7 +296,8 @@ void CSubmitDlg::OnSizing(UINT fwSide, LPRECT pRect)
 {
 	CDialogEx::OnSizing(fwSide, pRect);
 
-	InvalidateRect(&m_rtCanvas);
+	//InvalidateRect(&m_rtCanvas);
+	Invalidate();
 }
 
 
@@ -304,10 +306,18 @@ void CSubmitDlg::OnSize(UINT nType, int cx, int cy)
 	CDialogEx::OnSize(nType, cx, cy);
 	
 	if (GetDlgItem(IDC_BTN_RESET)) {
-		RECT rt;
-		GetDlgItem(IDC_BTN_RESET)->GetWindowRect(&rt);
-		ScreenToClient(&rt);
-		GetDlgItem(IDC_BTN_RESET)->MoveWindow(cx - 10 - (rt.right - rt.left), rt.top, rt.right - rt.left, rt.bottom - rt.top);
+		RECT rtReset, rtRun;
+		GetDlgItem(IDC_BTN_RESET)->GetWindowRect(&rtReset);
+		ScreenToClient(&rtReset);
+		GetDlgItem(IDC_BTN_RESET)->MoveWindow(cx - 10 - (rtReset.right - rtReset.left), rtReset.top, rtReset.right - rtReset.left, rtReset.bottom - rtReset.top);
+
+		// GetDlgItem(IDC_BTN_RESET)->GetWindowRect(&rtReset);
+		GetDlgItem(IDC_BTN_RUN)->GetWindowRect(&rtRun);
+		ScreenToClient(&rtReset);
+		ScreenToClient(&rtRun);
+		// GetDlgItem(IDC_BTN_RUN)->MoveWindow(rtReset.left - 10 - (rtRun.right - rtRun.left), rtRun.top, rtRun.right - rtRun.left, rtRun.bottom - rtRun.top);
+		GetDlgItem(IDC_BTN_RUN)->MoveWindow(cx - 10 - (rtRun.right - rtRun.left) - (rtReset.right - rtReset.left), rtRun.top, rtRun.right - rtRun.left, rtRun.bottom - rtRun.top);
+
 	}
 
 	InvalidateRect(&m_rtCanvas);
@@ -341,17 +351,18 @@ BOOL CSubmitDlg::PreCreateWindow(CREATESTRUCT& cs)
 
 void CSubmitDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	m_nDragPtIdx = _SetPoint(point);
+	if ((NULL == m_hThread) && (m_nDragPtIdx == -1)) {
+		m_nDragPtIdx = _SetPoint(point);
 
-	InvalidateRect(&m_rtCanvas);
+		InvalidateRect(&m_rtCanvas);
+	}
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
 void CSubmitDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	if (m_nDragPtIdx != -1) {
+	if ((NULL == m_hThread) && (m_nDragPtIdx != -1)) {
 		_SetPoint(m_nDragPtIdx, point);
 		InvalidateRect(&m_rtCanvas);
 	}
@@ -361,8 +372,10 @@ void CSubmitDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 void CSubmitDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	m_nDragPtIdx = -1;
-	InvalidateRect(&m_rtCanvas);
+	if ((NULL == m_hThread) && (m_nDragPtIdx != -1)) {
+		m_nDragPtIdx = -1;
+		InvalidateRect(&m_rtCanvas);
+	}
 
 	CDialogEx::OnLButtonUp(nFlags, point);
 }
@@ -405,9 +418,15 @@ unsigned int __stdcall WorkerThreadFunc(LPVOID pParam) {
 
 void CSubmitDlg::OnBnClickedBtnRun()
 {
+	_ResetPoints();
+
+	InvalidateRect(&m_rtCanvas);
+
 	m_hThread = (HANDLE) _beginthreadex(NULL, 0, WorkerThreadFunc, (void*)this, 0, NULL);
 
 	((CButton*)GetDlgItem(IDC_BTN_RUN))->EnableWindow(FALSE);
+	((CButton*)GetDlgItem(IDC_BTN_RESET))->EnableWindow(FALSE);
+
 }
 
 void CSubmitDlg::AutoRun() {
@@ -415,13 +434,43 @@ void CSubmitDlg::AutoRun() {
 	const int total_time_ms = 5000; // 5초
 	const int repeat_count = total_time_ms / interval_ms;
 
+	_ResetPoints();
+	InvalidateRect(&m_rtCanvas);
+
+	Sleep(interval_ms);
+
 	for (int i = 0; i < repeat_count; ++i) {
+		
+		
+		std::random_device rd;
+		std::mt19937 mt(rd());
+		std::uniform_int_distribution<int> distX(10, m_rtCanvas.right);
+		std::uniform_int_distribution<int> distY(40, m_rtCanvas.bottom);
 
+		for (int j = 0; j < 3; ++j) {
+			POINT PT;
+			
+			PT.x = distX(mt);
+			PT.y = distY(mt);
 
+			_SetPoint(PT);
+		}
 
+		InvalidateRect(&m_rtCanvas);
 		Sleep(interval_ms);
+
+		if (i < (repeat_count - 1)) {
+			// 마지막 점들과 원은 남기기 위해서 마지막에는 점의 정보를 초기화하지 않는다.
+			_ResetPoints();
+			InvalidateRect(&m_rtCanvas);
+		}
+		
 	}
 
+	m_hThread = NULL;
+
 	((CButton*)GetDlgItem(IDC_BTN_RUN))->EnableWindow(TRUE);
+	((CButton*)GetDlgItem(IDC_BTN_RESET))->EnableWindow(TRUE);
+
 
 }
