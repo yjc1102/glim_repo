@@ -42,8 +42,6 @@ private:
 
 	BOOL _GetCenterPoint(POINT &refPTCenter, LONG &lnRadius);
 
-	void _DrawCenterPT(HDC hDC);
-
 public:
 	void AutoRun();
 

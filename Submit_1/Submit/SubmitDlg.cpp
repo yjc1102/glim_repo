@@ -238,9 +238,6 @@ void CSubmitDlg::_DrawCanvas(HDC hDC) {
 	// 세 점을 그린다.
 	_DrawPointCircle(hCompDC);
 
-	// 세 점의 중심 점을 그린다.
-	//_DrawCenterPT(hCompDC);
-
 	::BitBlt(hDC, m_rtCanvas.left, m_rtCanvas.top, m_rtCanvas.right - m_rtCanvas.left, m_rtCanvas.bottom - m_rtCanvas.top, hCompDC, 0, 0, SRCCOPY);
 
 	::SelectObject(hCompDC, hBit_Old);
@@ -395,27 +392,6 @@ BOOL CSubmitDlg::_GetCenterPoint(POINT &refPTCenter, LONG &lnRadius) {
 	lnRadius = distance(refPTCenter, m_arPoints[0]);
 
 	return TRUE;
-}
-
-void CSubmitDlg:: _DrawCenterPT(HDC hDC) {
-
-	POINT ptCenter = POINT{ LONG_MIN, LONG_MIN };
-	LONG lnCenterEllipsRadius = 0L;
-
-	int nRadius = 0;
-
-	if (!_GetCenterPoint(ptCenter, lnCenterEllipsRadius)) {
-		return;
-	}
-
-	nRadius = GetDlgItemInt(IDC_EDIT_PT_RADIUS);
-
-	HBRUSH hBR_Old = (HBRUSH)::SelectObject(hDC, m_hBR_CenterPT);
-
-	_DrawEllipse(hDC, ptCenter, nRadius);
-
-	::SelectObject(hDC, hBR_Old);
-
 }
 
 unsigned int __stdcall WorkerThreadFunc(LPVOID pParam) {
