@@ -22,6 +22,8 @@
 
 CSubmitDlg::CSubmitDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_SUBMIT_DIALOG, pParent)
+	, m_ctrlEditPTRadius(0)
+	, m_ctrlEditEllipseThick(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -50,6 +52,8 @@ CSubmitDlg::~CSubmitDlg() {
 void CSubmitDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_PT_RADIUS, m_ctrlEditPTRadius);
+	DDX_Text(pDX, IDC_EDIT_ELLIPSE_THICK, m_ctrlEditEllipseThick);
 }
 
 BEGIN_MESSAGE_MAP(CSubmitDlg, CDialogEx)
@@ -64,6 +68,8 @@ BEGIN_MESSAGE_MAP(CSubmitDlg, CDialogEx)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_LBUTTONUP()
 	ON_BN_CLICKED(IDC_BTN_RUN, &CSubmitDlg::OnBnClickedBtnRun)
+	ON_EN_UPDATE(IDC_EDIT_PT_RADIUS, &CSubmitDlg::OnEnUpdateEditPtRadius)
+	ON_EN_UPDATE(IDC_EDIT_ELLIPSE_THICK, &CSubmitDlg::OnEnUpdateEditEllipseThick)
 END_MESSAGE_MAP()
 
 
@@ -473,4 +479,35 @@ void CSubmitDlg::AutoRun() {
 	((CButton*)GetDlgItem(IDC_BTN_RESET))->EnableWindow(TRUE);
 
 
+}
+
+void CSubmitDlg::OnEnUpdateEditPtRadius()
+{
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	// CDialogEx::OnInitDialog() 함수를 재지정 
+	//하여, IParam 마스크에 OR 연산하여 설정된 ENM_SCROLL 플래그를 지정하여 컨트롤에 EM_SETEVENTMASK 메시지를 보내지 않으면
+	// 편집 컨트롤이 바뀐 텍스트를 표시하려고 함을 나타냅니다.
+
+	UpdateData(TRUE);
+
+	m_ctrlEditPTRadius = min(m_ctrlEditPTRadius, 100);
+	m_ctrlEditPTRadius = max(m_ctrlEditPTRadius, 3);
+	
+	UpdateData(FALSE);
+}
+
+
+void CSubmitDlg::OnEnUpdateEditEllipseThick()
+{
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	// CDialogEx::OnInitDialog() 함수를 재지정 
+	//하여, IParam 마스크에 OR 연산하여 설정된 ENM_SCROLL 플래그를 지정하여 컨트롤에 EM_SETEVENTMASK 메시지를 보내지 않으면
+	// 편집 컨트롤이 바뀐 텍스트를 표시하려고 함을 나타냅니다.
+
+	UpdateData(TRUE);
+
+	m_ctrlEditEllipseThick= min(m_ctrlEditEllipseThick, 10);
+	m_ctrlEditEllipseThick = max(m_ctrlEditEllipseThick, 1);
+
+	UpdateData(FALSE);
 }

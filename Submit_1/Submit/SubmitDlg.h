@@ -67,4 +67,8 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnBnClickedBtnRun();
+	afx_msg void OnEnUpdateEditPtRadius();
+	int m_ctrlEditPTRadius;
+	afx_msg void OnEnUpdateEditEllipseThick();
+	int m_ctrlEditEllipseThick;
 };
