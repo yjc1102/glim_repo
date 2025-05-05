@@ -1,2 +1,7 @@
 # git ignore file
 /Submit_1/.vs
+/Submit_1/Debug
+/Submit_1/Release
+/Submit_1/Submit/Debug
+/Submit_1/Submit/Release
+/Submit_1/Submit/*.aps
