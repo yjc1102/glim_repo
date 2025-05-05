@@ -1,0 +1,49 @@
+#include <iostream>
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+using namespace std;
+
+int solution(int a, int b, int c, int d) {
+    map<int, int> freq;
+    vector<int> dice = {a, b, c, d};
+    
+    // 주사위 값 빈도수 계산
+    for (int num : dice) {
+        freq[num]++;
+    }
+
+    if (freq.size() == 1) {
+        return 1111 * a;
+    } else if (freq.size() == 2) {
+        for (auto it : freq) {
+            if (it.second == 3) {
+                int p = it.first;
+                int q = 0;
+                for (auto it2 : freq) {
+                    if (it2.first != p) {
+                        q = it2.first;
+                        break;
+                    }
+                }
+                return pow(10 * p + q, 2);
+            }
+        }
+        auto it = freq.begin();
+        int p = it->first;
+        int q = (++it)->first;
+        return (p + q) * abs(p - q);
+    } else if (freq.size() == 3) {
+        int q = 0, r = 0;
+        for (auto it : freq) {
+            if (it.second == 2) continue;
+            if (q == 0) q = it.first;
+            else r = it.first;
+        }
+        return q * r;
+    } else {
+        return *min_element(dice.begin(), dice.end());
+    }
+}
